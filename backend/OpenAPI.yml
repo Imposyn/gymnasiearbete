@@ -1,0 +1,1473 @@
+openapi: 3.0.0
+info:
+  title: API Documentation
+  version: 1.0.11
+  description: API for a forum. Understanding the code is very important if you are gonna use it.
+tags:
+  - name: user
+    description: Operations related to users.
+  - name: post
+    description: Operations related to posts.
+  - name: comments
+    description: Operations related to comments.
+  - name: tag
+    description: Operations related to tags.
+
+paths:
+  /signup:
+    post:
+      tags:
+        - user
+      summary: User signup
+      description: Register a new user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successful registration
+          content:
+            application/json:
+              example:
+                message: Signup successful
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              example:
+                message: Please provide a username and password.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: Database error while signing up.
+  /login:
+    post:
+      tags:
+        - user
+      summary: User login
+      description: Log in with an existing user.
+      security:
+        - api_key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              example:
+                message: Login successful
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Invalid credentials
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: Database error while logging in.
+  /create-post:
+    post:
+      tags:
+        - post
+      summary: Create post
+      description: Create a new post.
+      security:
+        - api_key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: The title of the post.
+                content:
+                  type: string
+                  description: The content of the post.
+                visibility:
+                  type: string
+                  description: The visibility of the post (public, private, friends).
+      responses:
+        '201':
+          description: Post created successfully
+          content:
+            application/json:
+              example:
+                message: "Post created successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: "Invalid token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error creating post"
+  /add-comment:
+    post:
+      tags:
+        - comments
+      summary: Add comment
+      description: Add a new comment to a post.
+      security:
+        - api_key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                postId:
+                  type: integer
+                  description: The ID of the post to comment on.
+                text:
+                  type: string
+                  description: The text of the comment.
+      responses:
+        '201':
+          description: Comment added successfully
+          content:
+            application/json:
+              example:
+                message: "Comment added successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: "Invalid token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error adding comment"
+  /comments/{postId}:
+    get:
+      tags:
+        - comments
+      summary: Get comments for a post
+      description: Retrieve comments associated with a specific post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to retrieve comments for.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful retrieval of comments
+          content:
+            application/json:
+              example:
+                - CommentID: 1
+                  UserID: 1
+                  Username: "user1"
+                  Text: "This is a comment."
+                - CommentID: 2
+                  UserID: 2
+                  Username: "user2"
+                  Text: "Another comment."
+        '404':
+          description: Comments not found for the post
+          content:
+            application/json:
+              example:
+                message: "Comments not found for the post"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error fetching comments"
+  /add-reply:
+    post:
+      tags:
+        - comments
+      summary: Add reply
+      description: Add a new reply to a comment.
+      security:
+        - api_key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                commentId:
+                  type: integer
+                  description: The ID of the comment to reply to.
+                text:
+                  type: string
+                  description: The text of the reply.
+      responses:
+        '201':
+          description: Reply added successfully
+          content:
+            application/json:
+              example:
+                message: "Reply added successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: "Invalid token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error adding reply"
+  /update-profile:
+    put:
+      tags:
+        - user
+      summary: Update profile
+      description: Update the profile information for the authenticated user.
+      security:
+        - api_key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newUsername:
+                  type: string
+                  description: The new username for the user.
+                newEmail:
+                  type: string
+                  description: The new email for the user.
+                newPassword:
+                  type: string
+                  description: The new password for the user.
+                newBiography:
+                  type: string
+                  description: The new biography for the user.
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              example:
+                message: "Profile updated successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: "Invalid token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error updating profile"
+  /posts:
+    get:
+      tags:
+        - post
+      summary: Get posts
+      description: Retrieve a list of posts.
+      responses:
+        '200':
+          description: Successful retrieval of posts
+          content:
+            application/json:
+              example:
+                - PostID: 1
+                  UserID: 1
+                  Username: "user1"
+                  Title: "Post Title 1"
+                  Content: "This is the content of post 1."
+                  Visibility: "public"
+                - PostID: 2
+                  UserID: 2
+                  Username: "user2"
+                  Title: "Post Title 2"
+                  Content: "This is the content of post 2."
+                  Visibility: "private"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error fetching posts"
+  /users/{userId}:
+    get:
+      tags:
+        - user
+      summary: Get user by ID
+      description: Retrieve user information by user ID.
+      security:
+        - api_key: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user to retrieve.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful retrieval of user
+          content:
+            application/json:
+              example:
+                UserID: 1
+                Username: "user1"
+                Email: "user1@example.com"
+                Biography: "Biography of user1."
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                message: "User not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error fetching user"
+  /update-about-me:
+    put:
+      tags:
+        - user
+      summary: Update about me
+      description: Update the "about me" section for the authenticated user.
+      security:
+        - api_key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newBiography:
+                  type: string
+                  description: The new biography for the user.
+      responses:
+        '200':
+          description: About me updated successfully
+          content:
+            application/json:
+              example:
+                message: "About me updated successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: "Invalid token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error updating about me"
+  /get-current-email:
+    get:
+      tags:
+        - user
+      summary: Get current email
+      description: Retrieve the email address of the authenticated user.
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: Successful retrieval of email
+          content:
+            application/json:
+              example:
+                email: "user1@example.com"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: "Invalid token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error fetching email"
+  /get-current-about-me:
+    get:
+      tags:
+        - user
+      summary: Get current about me
+      description: Retrieve the "about me" section of the authenticated user.
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: Successful retrieval of about me
+          content:
+            application/json:
+              example:
+                biography: "Biography of user1."
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: "Invalid token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error fetching about me"
+  /posts/{postId}:
+    get:
+      tags:
+        - post
+      summary: Get post by ID
+      description: Retrieve post information by post ID.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to retrieve.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful retrieval of post
+          content:
+            application/json:
+              example:
+                PostID: 1
+                UserID: 1
+                Username: "user1"
+                Title: "Post Title 1"
+                Content: "This is the content of post 1."
+                Visibility: "public"
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              example:
+                message: "Post not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error fetching post"
+  /my-posts:
+    get:
+      tags:
+        - post
+      summary: Get my posts
+      description: Retrieve a list of posts created by the authenticated user.
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: Successful retrieval of user's posts
+          content:
+            application/json:
+              example:
+                - PostID: 1
+                  Title: "Post Title 1"
+                  Content: "This is the content of post 1."
+                  Visibility: "public"
+                - PostID: 2
+                  Title: "Post Title 2"
+                  Content: "This is the content of post 2."
+                  Visibility: "private"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: "Invalid token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error fetching user's posts"
+  /my-comments:
+    get:
+      tags:
+        - comments
+      summary: Get my comments
+      description: Retrieve a list of comments created by the authenticated user.
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: Successful retrieval of user's comments
+          content:
+            application/json:
+              example:
+                - CommentID: 1
+                  PostID: 1
+                  Text: "This is a comment."
+                - CommentID: 2
+                  PostID: 2
+                  Text: "Another comment."
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: "Invalid token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error fetching user's comments"
+  /block-user:
+    post:
+      tags:
+        - user
+      summary: Block user
+      description: Block a user to prevent interactions.
+      security:
+        - api_key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  description: The ID of the user to be blocked.
+      responses:
+        '200':
+          description: Successful blocking of user
+          content:
+            application/json:
+              example:
+                message: "User blocked successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: "Invalid token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error blocking user"
+  /blocked-users:
+    get:
+      summary: Get blocked users
+      description: Retrieve a list of users blocked by the authenticated user.
+      tags:
+        - user
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: Successful retrieval of blocked users
+          content:
+            application/json:
+              example:
+                - UserID: 1
+                  Username: "blocked_user1"
+                - UserID: 2
+                  Username: "blocked_user2"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Invalid token
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: Error fetching blocked users
+  /unblock-user:
+    post:
+      summary: Unblock user
+      description: Unblock a user to allow interactions again.
+      tags:
+        - user
+      security:
+        - api_key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                blockedUserId:
+                  type: integer
+                  description: The ID of the user to be unblocked.
+      responses:
+        '200':
+          description: Successful unblocking of user
+          content:
+            application/json:
+              example:
+                message: "User unblocked successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Invalid token
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error unblocking user"
+  /save-post:
+    post:
+      summary: Save post
+      description: Save a post to the user's saved posts.
+      tags:
+        - post
+      security:
+        - api_key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                postId:
+                  type: integer
+                  description: The ID of the post to be saved.
+      responses:
+        '200':
+          description: Successful saving of post
+          content:
+            application/json:
+              example:
+                message: "Post saved successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Invalid token
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error saving post"
+  /other-users:
+    get:
+      summary: Get other users
+      description: Retrieve a list of users excluding the authenticated user.
+      security:
+        - api_key: []
+      tags:
+        - user
+      responses:
+        '200':
+          description: Successful retrieval of other users
+          content:
+            application/json:
+              example:
+                - UserID: 1
+                  Username: "other_user1"
+                  Email: "other_user1@example.com"
+                  Biography: "Biography of other_user1."
+                - UserID: 2
+                  Username: "other_user2"
+                  Email: "other_user2@example.com"
+                  Biography: "Biography of other_user2."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error fetching other users"
+  /update-comment/{commentId}:
+    put:
+      summary: Update comment
+      description: Update the text of a comment if the user is the owner.
+      tags:
+        - comments
+      security:
+        - api_key: []
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment to be updated.
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                updatedCommentText:
+                  type: string
+                  description: The updated text for the comment.
+      responses:
+        '200':
+          description: Successful update of comment
+          content:
+            application/json:
+              example:
+                message: "Comment updated successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Invalid token
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: "Unauthorized or comment not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error updating comment"
+  /update-post/{postId}:
+    put:
+      summary: Update post
+      description: Update the title, content, and visibility of a post if the user is the owner.
+      tags:
+        - post
+      security:
+        - api_key: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to be updated.
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                updatedTitle:
+                  type: string
+                  description: The updated title for the post.
+                updatedContent:
+                  type: string
+                  description: The updated content for the post.
+                updatedVisibility:
+                  type: string
+                  description: The updated visibility for the post.
+      responses:
+        '200':
+          description: Successful update of post
+          content:
+            application/json:
+              example:
+                message: "Post updated successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Invalid token
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example:
+                message: "Unauthorized or post not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error updating post"
+  /api/tags:
+    post:
+      summary: Create tag and associate with a post
+      description: Create a new tag and associate it with a post.
+      security:
+        - api_key: []
+      tags:
+        - tag
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the tag.
+                postId:
+                  type: integer
+                  description: The ID of the post to associate the tag with.
+      responses:
+        '201':
+          description: Tag created and associated with the post successfully
+          content:
+            application/json:
+              example:
+                message: "Tag created and associated with the post successfully"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              example:
+                message: "Tag name is required"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error creating tag"
+  /api/tags/{postId}:
+    get:
+      summary: Get tags for a post
+      description: Retrieve tags associated with a specific post.
+      tags:
+        - tag
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to retrieve tags for.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful retrieval of tags
+          content:
+            application/json:
+              example:
+                tag: "example_tag"
+        '404':
+          description: Tag not found for the post
+          content:
+            application/json:
+              example:
+                message: "Tag not found for the post"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error fetching tag"
+  /api/posts/{postId}/upvote:
+    post:
+      summary: Upvote a post
+      description: Upvote a post identified by postId.
+      tags:
+        - post
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to upvote.
+          schema:
+            type: integer
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: Successful upvote
+          content:
+            application/json:
+              example:
+                message: Upvoted post successfully
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              example:
+                message: User has already upvoted this post
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Invalid token
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: Error upvoting post
+  /api/posts/{postId}/downvote:
+    post:
+      summary: Downvote a post
+      description: Downvote a post identified by postId.
+      tags:
+        - post
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to downvote.
+          schema:
+            type: integer
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: Successful downvote
+          content:
+            application/json:
+              example:
+                message: Downvoted post successfully
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              example:
+                message: User has already downvoted this post
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Invalid token
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: Error downvoting post
+  /api/comments/{commentId}/upvote:
+    post:
+      summary: Upvote a comment
+      description: Upvote a comment identified by commentId.
+      tags:
+        - comments
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment to upvote.
+          schema:
+            type: integer
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: Successful upvote
+          content:
+            application/json:
+              example:
+                message: Upvoted comment successfully
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              example:
+                message: User has already upvoted this comment
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Invalid token
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: Error upvoting comment
+  /api/comments/{commentId}/downvote:
+    post:
+      summary: Downvote a comment
+      description: Downvote a comment identified by commentId.
+      tags:
+        - comments
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment to downvote.
+          schema:
+            type: integer
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: Successful downvote
+          content:
+            application/json:
+              example:
+                message: Downvoted comment successfully
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              example:
+                message: User has already downvoted this comment
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Invalid token
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: Error downvoting comment
+  /api/posts/{postId}/user-vote:
+    get:
+      summary: Get user's vote on a post
+      description: Retrieve the user's vote (upvote, downvote, or null) on a post identified by postId.
+      tags:
+        - post
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to check for the user's vote.
+          schema:
+            type: integer
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: Successful retrieval of user's vote
+          content:
+            application/json:
+              example:
+                vote: upvote
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Invalid token
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: Error fetching post vote
+  /api/comments/{postId}/votes:
+    get:
+      summary: Get votes on post and associated comments
+      description: Retrieve the votes (upvote, downvote, or null) on a post and its associated comments.
+      tags:
+        - comments
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to check for votes.
+          schema:
+            type: integer
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: Successful retrieval of votes
+          content:
+            application/json:
+              example:
+                postVote: upvote
+                commentVotes:
+                  '1': upvote
+                  '2': downvote
+                  '3': null
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Invalid token or postId missing
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: Error fetching votes
+  /create-profile-picture:
+    post:
+      summary: Create or update user profile picture
+      description: Create or update the profile picture for the authenticated user.
+      security:
+        - api_key: []
+      tags:
+        - user
+      parameters:
+        - in: header
+          name: Authorization
+          description: Bearer token for user authentication
+          required: true
+          schema:
+            type: string
+        - in: body
+          name: profilePicture
+          description: The URL of the profile picture to be created or updated
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profilePictureUrl:
+                    type: string
+                    example: "https://example.com/profile.jpg"
+      responses:
+        '200':
+          description: Profile picture created successfully
+          content:
+            application/json:
+              example:
+                message: Profile picture created successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                error: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                error: Error creating profile picture
+
+  /get-profile-picture:
+    get:
+      summary: Get user profile information
+      description: Get the profile information, including the profile picture, for the authenticated user.
+      security:
+        - api_key: []
+      tags:
+        - user
+      parameters:
+        - in: header
+          name: Authorization
+          description: Bearer token for user authentication
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful retrieval of user profile
+          content:
+            application/json:
+              example:
+                Username: "JohnDoe"
+                Email: "john.doe@example.com"
+                ProfilePicture: "https://example.com/profile.jpg"
+                Biography: "Web Developer"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '404':
+          description: User not found
+          content:
+            application/json:
+              example:
+                message: User not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: Error fetching user profile
+  /api/posts/{postId}:
+    delete:
+      summary: Delete a post
+      description: Delete the post with the specified ID if the authenticated user is the author.
+      security:
+        - api_key: []
+      tags:
+        - post
+      parameters:
+        - in: header
+          name: Authorization
+          description: Bearer token for user authentication
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: postId
+          description: ID of the post to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post deleted successfully
+          content:
+            application/json:
+              example:
+                message: Post deleted successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Unauthorized to delete this post
+          content:
+            application/json:
+              example:
+                message: Unauthorized to delete this post
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: Error deleting post
+  /saved-posts:
+    get:
+      summary: Get saved posts
+      description: Retrieve a list of posts saved by the authenticated user.
+      tags:
+        - post
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: Successful retrieval of saved posts
+          content:
+            application/json:
+              example:
+                - PostID: 1
+                  Title: "Saved Post 1"
+                  Content: "Content of Saved Post 1"
+                - PostID: 2
+                  Title: "Saved Post 2"
+                  Content: "Content of Saved Post 2"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                message: "Invalid token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error fetching saved posts"
+  /update-profile-picture:
+    put:
+      summary: Update profile picture
+      description: Update the profile picture URL for the authenticated user.
+      tags:
+        - user
+      security:
+        - api_key: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                profilePictureUrl:
+                  type: string
+                  description: The URL of the new profile picture.
+              required:
+                - profilePictureUrl
+      responses:
+        '200':
+          description: Successful update of profile picture
+          content:
+            application/json:
+              example:
+                message: Profile picture updated successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                error: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                error: Error updating profile picture
+  /check-user-blocked-status:
+    post:
+      summary: Check user blocked status
+      description: Check if a user is blocked based on the provided user ID.
+      security:
+        - api_key: []
+      tags:
+        - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  description: The ID of the user to check for blocked status.
+              required:
+                - userId
+      responses:
+        '200':
+          description: Successful retrieval of user's blocked status
+          content:
+            application/json:
+              example:
+                blocked: true
+        '201':
+          description: Successful retrieval of user's not blocked status
+          content:
+            application/json:
+              example:
+                blocked: false
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                error: Error checking user blocked status
+  /api/posts/tag/{tagName}:
+    get:
+      tags:
+        - tag
+      summary: Get posts by tag
+      description: Fetch posts based on the specified tag.
+      parameters:
+        - name: tagName
+          in: path
+          description: The name of the tag.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful retrieval of posts
+          content:
+            application/json:
+              example:
+                posts:
+                  - postId: 1
+                    title: "Sample Post"
+                    content: "This is a sample post."
+                    author: "John Doe"
+                  - postId: 2
+                    title: "Another Post"
+                    content: "This is another post."
+                    author: "Jane Doe"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: "Error fetching posts by tag"
+  /post/{postId}/votes:
+    get:
+      tags:
+        - post
+      summary: Get votes for a post
+      description: Fetch upvotes, downvotes, and points for a post.
+      security:
+        - api_key: []
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful retrieval of votes
+          content:
+            application/json:
+              example:
+                upvotes: 5
+                downvotes: 2
+                points: 3
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: Error getting votes.
+
+  /comment/{commentId}/votes:
+    get:
+      tags:
+        - comments
+      summary: Get votes for a comment
+      description: Fetch upvotes, downvotes, and points for a comment.
+      security:
+        - api_key: []
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful retrieval of votes for comment
+          content:
+            application/json:
+              example:
+                upvotes: 3
+                downvotes: 1
+                points: 2
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              example:
+                message: Error getting votes for comment.
+components:
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
+
+security:
+  - api_key: []
