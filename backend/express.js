@@ -19,9 +19,9 @@ const jwtSecret = process.env.JWT_SECRET || 'YourDefaultSecretKey';
 
 const db = mysql.createConnection({
   host: '127.0.0.1',
-  user: 'admin',
-  password: 'Yakup@123',
-  database: 'platform',
+  user: 'lukas',
+  password: '!QAZ1qaz',
+  database: 'gymarbete',
 });
 
 app.use(bodyParser.json());

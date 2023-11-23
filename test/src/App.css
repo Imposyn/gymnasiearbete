@@ -259,6 +259,8 @@ button:active{
   touch-action: manipulation;
   cursor: pointer;
   height: 40px;
+  padding-right: 5px;
+  margin-right: 5px;
 }
 .dropdown {
   position: relative;
@@ -301,6 +303,11 @@ button:active{
 .signup-link {
   color: #0D0D0D;
   cursor: pointer;
+  font-family: 'Poppins', sans-serif; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .signup-link span {
@@ -374,6 +381,63 @@ button:active{
   margin-left: 20px; 
   padding: 10px;
 }
+
+.login {
+  font-family: 'Poppins', sans-serif; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.signup {
+  font-family: 'Poppins', sans-serif; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.signup input {
+  background: 0;
+  border: 0;
+  outline: none;
+  width: 80vw;
+  max-width: 400px;
+  font-size: 1.5em;
+  transition: padding 0.3s 0.2s ease;
+  font-family: inherit;
+  width: 100%;
+  border: 0;
+  border-bottom: 2px solid gray;
+  outline: 0;
+  font-size: 1.3rem;
+  color: black;
+  padding: 7px 0;
+  background: transparent;
+  transition: border-color 0.2s;
+}
+
+.login input {
+  background: 0;
+  border: 0;
+  outline: none;
+  width: 80vw;
+  max-width: 400px;
+  font-size: 1.5em;
+  transition: padding 0.3s 0.2s ease;
+  font-family: inherit;
+  width: 100%;
+  border: 0;
+  border-bottom: 2px solid gray;
+  outline: 0;
+  font-size: 1.3rem;
+  color: black;
+  padding: 7px 0;
+  background: transparent;
+  transition: border-color 0.2s;
+}
+
 
 /*Messages to other users? Make it so you cant block yourself. Fixing console errors. Display amount of comments/points in homepage?
 About Riddet page or other pages? Online status, sort posts by points, social links, history (clear history), upvoted, downvoted, delete account? 

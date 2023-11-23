@@ -36,11 +36,15 @@ const SignupForm = ({ setMessage }) => {
   };
 
   return (
+
+ 
+    
     <div className="signup">
       <h2 >Sign Up</h2>
       <div>
         <input
           type="text"
+          className="form__field"
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}

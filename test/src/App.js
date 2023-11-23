@@ -196,7 +196,7 @@ const App = () => {
             </span>
           )}
           {isLoggedIn && (
-            <button className="auth-button-color" onClick={handleLogout}>
+            <button className="buttons" onClick={handleLogout}>
               Logout
             </button>
           )}
