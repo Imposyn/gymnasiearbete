@@ -1,10 +1,7 @@
-CREATE DATABASE amindal_db;
-USE amindal_db;
-
 CREATE TABLE UserAccounts (
     UserID INT AUTO_INCREMENT PRIMARY KEY,
     Username VARCHAR(50) NOT NULL,
-    Email VARCHAR(100) NULL,
+    Email VARCHAR(100) DEFAULT NULL,
     PasswordHash BINARY(60) NOT NULL,
     ProfilePicture VARCHAR(255),
     Biography TEXT,
