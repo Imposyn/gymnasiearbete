@@ -2,6 +2,8 @@ body {
   font-size: 16px;
   font-family: 'Helvetica Neue', sans-serif;
   line-height: 1.5;
+    padding: 10px;
+
 }
 
 @media (max-width: 768px) {
@@ -156,7 +158,6 @@ body {
     vertical-align: middle;
     white-space: nowrap;
     width: 50%;
-   
   }
   
   .button-19:after {
@@ -199,7 +200,7 @@ button:active{
 
 .logo {
   width: 150px; 
-  cursor: pointer;
+  cursor: pointer; 
 }
 
 .search-bar {
@@ -227,6 +228,7 @@ button:active{
 .error-message {
   color: red;
   font-weight: bold;
+  padding: 10px;
 }
 
 .upvoted {
@@ -242,6 +244,7 @@ button:active{
 .dark-mode {
   background-color: #1a1a1a;
   color: #fff;
+ 
 }
 
 .buttons {
@@ -301,14 +304,19 @@ button:active{
 .signup-link {
   color: #0D0D0D;
   cursor: pointer;
+  padding: 10px;
+  margin-left: 500px;
 }
 
 .signup-link span {
   color: #002bff;
+  padding: 1px;
+  text-decoration: underline;
+  text-align: center;
 }
 
 .signup-link:hover {
-  color: #002bff;
+  
 }
 
 .bold-text {
@@ -375,6 +383,14 @@ button:active{
   padding: 10px;
 }
 
+.login{
+  padding: 10px;
+  margin-left: 500px;
+}
+.signup{
+ padding: 10px;
+ margin-left: 500px;
+}
 /*Messages to other users? Make it so you cant block yourself. Fixing console errors. Display amount of comments/points in homepage?
 About Riddet page or other pages? Online status, sort posts by points, social links, history (clear history), upvoted, downvoted, delete account? 
 Full name, display name, profile banner? Followers/following? Moderation, animations/videos, notifications (messages, mentions, comments, votes

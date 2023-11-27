@@ -20,8 +20,8 @@ const jwtSecret = process.env.JWT_SECRET || 'YourDefaultSecretKey';
 const db = mysql.createConnection({
   host: '127.0.0.1',
   user: 'admin',
-  password: 'Yakup@123',
-  database: 'platform',
+  password: 'qwertyQWERTY123',
+  database: 'amindal_db',
 });
 
 app.use(bodyParser.json());
