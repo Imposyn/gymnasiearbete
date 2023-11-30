@@ -1,15 +1,16 @@
 body {
   font-size: 16px;
-  font-family: 'Helvetica Neue', sans-serif;
-  line-height: 1.5;
 }
 
 @media (max-width: 768px) {
   body {
-    font-size: 1.5rem;
+    font-size: 16px;
   }
-  img {
-    width: 100%;
+}
+
+@media (max-width: 480px) {
+  .search-bar {
+    display: none !important; /*important är till för att prioritera den här regeln*/
   }
 }
 
@@ -31,6 +32,7 @@ body {
   padding: 10px;
   margin: 10px;
   cursor: pointer;
+  width: 100%;
 }
 
 .post-item:hover {
@@ -124,77 +126,6 @@ body {
   left: 0;
   top: 0;
   border-radius: 10px;
-}
- /* CSS */
-.auth-buttons {
- 
-    appearance: button;
-    background-color: #1899D6;
-    border: solid transparent;
-    border-radius: 160px;
-    border-width: 0 0 4px;
-    box-sizing: border-box;
-    color: #FFFFFF;
-    cursor: pointer;
-    display: inline-block;
-    font-family: din-round,sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: .8px;
-    line-height: 20px;
-    margin: 0;
-    outline: none;
-    overflow: visible;
-    padding: 16px 16px;
-    text-align: center;
-    text-transform: uppercase;
-    touch-action: manipulation;
-    transform: translateZ(0);
-    transition: filter .2s;
-    user-select: none;
-    -webkit-user-select: none;
-    vertical-align: middle;
-    white-space: nowrap;
-    width: 50%;
-   
-  }
-  
-  .button-19:after {
-    background-clip: padding-box;
-    background-color: #1CB0F6;
-    border: solid transparent;
-    border-radius: 16px;
-    border-width: 0 0 4px;
-    bottom: -4px;
-    content: "";
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    z-index: -1;
-  }
-  
-  .button-19:main,
-  .button-19:focus {
-    user-select: auto;
-  }
-  
-  .button-19:hover:not(:disabled) {
-    filter: brightness(1.1);
-    -webkit-filter: brightness(1.1);
-  }
-  
-  .button-19:disabled {
-    cursor: auto;
-  }
-  
-  .button-19:active {
-    border-width: 4px 0 0;
-    background: none;
-  } 
-button:active{
-  transform:translateY(7px);
- 
 }
 
 .logo {
@@ -375,8 +306,4 @@ button:active{
   padding: 10px;
 }
 
-/*Messages to other users? Make it so you cant block yourself. Fixing console errors. Display amount of comments/points in homepage?
-About Riddet page or other pages? Online status, sort posts by points, social links, history (clear history), upvoted, downvoted, delete account? 
-Full name, display name, profile banner? Followers/following? Moderation, animations/videos, notifications (messages, mentions, comments, votes
-replies) Background/CSS, cleaning code (things I dont need, mindre spaghetti) 2FA
-Lite responsitivitet (small devices), användarvänlighet (meta tag, screen readers, SEO) och anpassa error/status quotes*/
+/*användarvänlighet (screen readers, SEO)*/

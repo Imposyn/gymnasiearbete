@@ -179,48 +179,57 @@ const App = () => {
           className="logo"
           onClick={handleLogoClick}
         />
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="Search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>  
-        <button className="buttons" onClick={showLogin}>
-              Login
-            </button>
-       
-          {!isLoggedIn && showSignupLink && (
-            <span className="signup-link" onClick={showSignup}>
-            </span>
-          )}
-          {isLoggedIn && (
-            <button className="auth-button-color" onClick={handleLogout}>
-              Logout
-            </button>
-          )}
-          {isLoggedIn && (
-            <button onClick={() => setIsProfileVisible(true)}>
-              {profilePictureUrl ? (
-                <img
-                  src={profilePictureUrl}
-                  alt="Profile"
-                  style={{
-                    maxWidth: '25px',
-                    maxHeight: '25px',
-                    width: 'auto',
-                    height: 'auto',
-                    borderRadius: '50%',
-                  }}
-                />
-              ) : (
-                <span>Profile</span>
-              )}
-            </button>
-          )}
-        </div>
+<div className="search-bar">
+  <input
+    type="text"
+    placeholder="Tag"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+  />
+  <button className="buttons" onClick={fetchPosts}>
+    Search
+  </button>
+</div>
   
+        <div className={isLoggedIn ? 'auth-buttons' : 'buttons'}>
+  {!isLoggedIn && (
+    <button className="buttons" onClick={showLogin}>
+      Login
+    </button>
+  )}
+  
+  {!isLoggedIn && showSignupLink && (
+    <span className="signup-link" onClick={showSignup}>
+    </span>
+  )}
+
+  {isLoggedIn && (
+    <button className="auth-button-color" onClick={handleLogout}>
+      Logout
+    </button>
+  )}
+
+  {isLoggedIn && (
+    <button onClick={() => setIsProfileVisible(true)}>
+      {profilePictureUrl ? (
+        <img
+          src={profilePictureUrl}
+          alt="Profile"
+          style={{
+            maxWidth: '25px',
+            maxHeight: '25px',
+            width: 'auto',
+            height: 'auto',
+            borderRadius: '50%',
+          }}
+        />
+      ) : (
+        <span>Profile</span>
+      )}
+    </button>
+  )}
+</div>
+</div>
       {isLoginVisible && !isLoggedIn && (
         <>
           <LoginForm
