@@ -18,10 +18,10 @@ app.use('/documentation', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 const jwtSecret = process.env.JWT_SECRET || 'YourDefaultSecretKey';
 
 const db = mysql.createConnection({
-  host: 'mysql.tglabbet.int',
-  user: 'amidal',
-  password: '1qaz!QAZ2wsx@WSX',
-  database: 'amidal',
+  host: '127.0.0.1',
+  user: 'admin',
+  password: 'Yakup@123',
+  database: 'platform',
 });
 
 app.use(bodyParser.json());

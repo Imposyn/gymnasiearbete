@@ -14,6 +14,22 @@ body {
   }
 }
 
+@media (max-width: 479px) {
+  body {
+    font-size: 14px; /* Adjust font size for smaller screens */
+    padding: 10px;
+  }
+
+  .header {
+    flex-direction: column; /* Stack header items vertically on small screens */
+    text-align: center; /* Center-align header content */
+  }
+
+  .logo {
+    width: 120px; /* Adjust logo size for smaller screens */
+  }
+}
+
 @media (min-width: 769px) and (max-width: 1024px) {
   body {
     background-color: white;  }

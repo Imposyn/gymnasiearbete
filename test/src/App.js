@@ -46,6 +46,33 @@ const App = () => {
   useEffect(() => {
   }, [isSignupVisible]);  
 
+  useEffect(() => {
+    // Add event listener for keyboard navigation
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  });
+
+    // Keyboard navigation
+    const handleKeyDown = (event) => {
+      switch (event.key) {
+        case 'Escape':
+          handleBackToPosts(); // Example: Pressing Escape goes back to the posts
+          break;
+        case 'ArrowLeft':
+          // Example: Handle left arrow key
+          break;
+        case 'ArrowRight':
+          // Example: Handle right arrow key
+          break;
+        default:
+          break;
+      }
+    };  
+
   const showLogin = () => {
     setIsLoginVisible(true);
     setIsSignupVisible(false);
