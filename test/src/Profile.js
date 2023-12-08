@@ -192,6 +192,32 @@ const Profile = ({ authToken, userId }) => {
     setIsEditingAboutMe(!isEditingAboutMe);
   };
 
+  const handleDeleteAccount = async (userId) => {
+    if (window.confirm('Are you sure you want to delete your account?')) {
+      try {
+        console.log('Deleting account...');
+        const response = await fetch(`http://localhost:8000/api/accounts/${userId}/delete`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+          },
+        });
+  
+        if (response.ok) {
+          // Handle successful deletion
+          console.log('Account deleted successfully');
+        } else {
+          // Handle deletion error
+          console.error('Error deleting account:', response.status);
+          alert('Error deleting account');
+        }
+      } catch (error) {
+        console.error('An error occurred while deleting account:', error);
+        alert('Error deleting account');
+      }
+    }
+  };  
+
   return (
     <div>
       <h2>Profile</h2>
@@ -227,6 +253,9 @@ const Profile = ({ authToken, userId }) => {
           <button className="buttons" onClick={() => setActiveTab('Theme')}>
             Theme
           </button>
+          <button className="buttons" onClick={() => handleDeleteAccount(userId)}>
+  Delete Account
+</button>
         </div>
       </div>
   

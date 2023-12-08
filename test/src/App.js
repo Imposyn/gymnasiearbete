@@ -21,7 +21,39 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [profilePictureUrl, setProfilePictureUrl] = useState('');
   const [showSignupLink, setShowSignupLink] = useState(false);
+  const [userId, setUserId] = useState(null);
 
+  const fetchUserId = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/users/${userId}` , {
+        headers: {
+          Authorization: `Bearer ${token}`, // Assuming token is the authentication token
+        },
+      });
+  
+      if (response.ok) {
+        const userData = await response.json();
+        const userId = userData.UserID; // Extract userId from the response
+        console.log('User ID:', userId);
+      } else if (response.status === 404) {
+        console.log('User not found');
+      } else {
+        console.error('Error fetching user:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching user:', error);
+    }
+  };
+  
+  useEffect(() => {
+    const fetchUserIdAsync = async () => {
+      const fetchedId = await fetchUserId();
+      setUserId(fetchedId);
+    };
+  
+    fetchUserIdAsync();
+  }, [isLoggedIn]);  
+  
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedUsername = localStorage.getItem('username');
@@ -45,33 +77,6 @@ const App = () => {
 
   useEffect(() => {
   }, [isSignupVisible]);  
-
-  useEffect(() => {
-    // Add event listener for keyboard navigation
-    window.addEventListener('keydown', handleKeyDown);
-
-    // Cleanup the event listener on component unmount
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  });
-
-    // Keyboard navigation
-    const handleKeyDown = (event) => {
-      switch (event.key) {
-        case 'Escape':
-          handleBackToPosts(); // Example: Pressing Escape goes back to the posts
-          break;
-        case 'ArrowLeft':
-          // Example: Handle left arrow key
-          break;
-        case 'ArrowRight':
-          // Example: Handle right arrow key
-          break;
-        default:
-          break;
-      }
-    };  
 
   const showLogin = () => {
     setIsLoginVisible(true);
@@ -288,7 +293,7 @@ const App = () => {
       )}
   
       {isProfileVisible && isLoggedIn && (
-        <Profile authToken={token} />
+        <Profile authToken={token} userId={userId} />
       )}
   
       {isLoggedIn && !isProfileVisible && (
@@ -318,7 +323,7 @@ const App = () => {
         <PostDetails
           post={selectedPost}
           onBackClick={handleBackToPosts}
-          token={token}
+          authToken={token}
           onCommentSubmit={handleCommentSubmit}
           isLoggedIn={isLoggedIn}
           username={username}

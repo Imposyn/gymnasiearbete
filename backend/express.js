@@ -422,42 +422,16 @@ app.get('/users/:userId', (req, res) => {
   const userId = req.params.userId;
   const selectUserSQL = 'SELECT UserID, Username, Email FROM UserAccounts WHERE UserID = ?';
 
-  if (!token) {
-    return res.status(401).json({ message: 'No token provided' });
-  }
-
-  try {
-    const decodedToken = jwt.verify(token, jwtSecret);
-    const userId = decodedToken.userId;
-    const createdAt = new Date();
-
-    const sql = 'INSERT INTO Posts (UserID, Title, Content, CreatedAt, Visibility) VALUES (?, ?, ?, ?, ?)';
-
-    db.query(sql, [userId, title, content, createdAt, visibility], (error, results) => {
-      if (error) {
-        console.error('Error creating post:', error);
-        return res.status(500).json({ message: 'Error creating post' });
-      }
-
-      console.log('Post created successfully:', { title, content, createdAt, userId });
-
-      
-      const postId = results.insertId;
-      const selectPostSQL = 'SELECT * FROM Posts WHERE PostID = ?';
-      db.query(selectPostSQL, [postId], (error, postResults) => {
-        if (error) {
-          console.error('Error fetching created post:', error);
-          return res.status(500).json({ message: 'Error fetching created post' });
-        }
-
-        const createdPost = postResults[0];
-        return res.json({ message: 'Post created successfully', post: createdPost });
-      });
-    });
-  } catch (error) {
-    console.error('Error decoding token:', error);
-    return res.status(401).json({ message: 'Invalid token' });
-  }
+  db.query(selectUserSQL, [userId], (error, results) => {
+    if (error) {
+      console.error('Error fetching user:', error);
+      res.status(500).json({ message: 'Error fetching user' });
+    } else if (results.length === 0) {
+      res.status(404).json({ message: 'User not found' });
+    } else {
+      res.json(results[0]);
+    }
+  });
 });
 
 
@@ -704,6 +678,30 @@ app.post('/save-post', authenticateToken, (req, res) => {
   }
 });
 
+app.delete('/unsave-post/:postId', authenticateToken, (req, res) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.userId;
+
+    if (!postId || !userId) {
+      console.error('Invalid request data');
+      return res.status(400).json({ message: 'Invalid request data' });
+    }
+    const deleteSavedPostSQL = 'DELETE FROM SavedPosts WHERE UserID = ? AND PostID = ?';
+
+    db.query(deleteSavedPostSQL, [userId, postId], (error, results) => {
+      if (error) {
+        console.error('Error unsaving post:', error);
+        return res.status(500).json({ message: 'Error unsaving post' });
+      }
+      res.json({ message: 'Post unsaved successfully' });
+    });
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+});
+
 app.get('/other-users', (req, res) => {
   const selectOtherUsersSQL = 'SELECT UserID, Username, Email, Biography FROM UserAccounts';
 
@@ -770,6 +768,41 @@ app.post('/api/tags', (req, res) => {
   });
 });
 
+app.put('/api/tags/:tagId', (req, res) => {
+  const { tagId } = req.params;
+  const { name } = req.body;
+  
+  if (!name) {
+    return res.status(400).json({ message: 'Tag name is required' });
+  }
+
+  const updateTagQuery = 'UPDATE Tags SET name = ? WHERE PostID = ?';
+
+  db.query(updateTagQuery, [name, tagId], (error, results) => {
+    if (error) {
+      console.error('Error updating tag:', error);
+      return res.status(500).json({ message: 'Error updating tag' });
+    }
+
+    return res.json({ message: 'Tag updated successfully' });
+  });
+});
+
+app.delete('/api/tags/:tagId', (req, res) => {
+  const { tagId } = req.params;
+
+  const deleteTagQuery = 'DELETE FROM Tags WHERE PostID = ?';
+
+  db.query(deleteTagQuery, [tagId], (error, results) => {
+    if (error) {
+      console.error('Error deleting tag:', error);
+      return res.status(500).json({ message: 'Error deleting tag' });
+    }
+
+    return res.json({ message: 'Tag deleted successfully' });
+  });
+});
+
 app.get('/api/tags/:postId', (req, res) => {
   const postId = req.params.postId;
 
@@ -827,6 +860,69 @@ app.post('/api/posts/:postId/upvote', authenticateToken, (req, res) => {
         }
         return res.status(200).json({ message: 'Upvoted post successfully' });
       });
+    });
+  });
+});
+
+app.put('/api/posts/:postId/edit-vote', authenticateToken, (req, res) => {
+  const postId = req.params.postId;
+  const userId = req.user.userId;
+
+  // Check if the user has already voted on this post
+  const checkVoteQuery = 'SELECT * FROM Votes WHERE UserID = ? AND PostID = ?';
+  db.query(checkVoteQuery, [userId, postId], (checkVoteError, checkVoteResults) => {
+    if (checkVoteError) {
+      console.error('Error checking vote:', checkVoteError);
+      return res.status(500).json({ message: 'Error checking vote' });
+    }
+
+    if (checkVoteResults.length === 0) {
+      return res.status(400).json({ message: 'User has not voted on this post' });
+    }
+
+    const currentVoteType = checkVoteResults[0].VoteType;
+
+    // Determine the new vote type based on the current vote type
+    const newVote = currentVoteType === 'upvote' ? 'downvote' : 'upvote';
+
+    // If the user has voted on this post, update the vote type
+    const updateVoteQuery = 'UPDATE Votes SET VoteType = ? WHERE UserID = ? AND PostID = ?';
+    db.query(updateVoteQuery, [newVote, userId, postId], (updateVoteError) => {
+      if (updateVoteError) {
+        console.error('Error updating vote:', updateVoteError);
+        return res.status(500).json({ message: 'Error updating vote' });
+      }
+
+      return res.status(200).json({ message: 'Vote updated successfully' });
+    });
+  });
+});
+
+app.delete('/api/posts/:postId/remove-vote', authenticateToken, (req, res) => {
+  const postId = req.params.postId;
+  const userId = req.user.userId;
+
+  // Check if the user has voted on this post
+  const checkVoteQuery = 'SELECT * FROM Votes WHERE UserID = ? AND PostID = ?';
+  db.query(checkVoteQuery, [userId, postId], (checkVoteError, checkVoteResults) => {
+    if (checkVoteError) {
+      console.error('Error checking vote:', checkVoteError);
+      return res.status(500).json({ message: 'Error checking vote' });
+    }
+
+    if (checkVoteResults.length === 0) {
+      return res.status(400).json({ message: 'User has not voted on this post' });
+    }
+
+    // If the user has voted on this post, delete the vote
+    const deleteVoteQuery = 'DELETE FROM Votes WHERE UserID = ? AND PostID = ?';
+    db.query(deleteVoteQuery, [userId, postId], (deleteVoteError) => {
+      if (deleteVoteError) {
+        console.error('Error deleting vote:', deleteVoteError);
+        return res.status(500).json({ message: 'Error deleting vote' });
+      }
+
+      return res.status(200).json({ message: 'Vote removed successfully' });
     });
   });
 });
@@ -1246,6 +1342,20 @@ app.delete('/api/comments/:commentId', authenticateToken, (req, res) => {
 
       res.json({ message: 'Comment deleted successfully' });
     });
+  });
+});
+
+app.delete('/api/accounts/:userId/delete', (req, res) => {
+  const userIdToDelete = req.params.userId;
+
+  const deleteAccountQuery = 'DELETE FROM UserAccounts WHERE UserID = ?';
+  db.query(deleteAccountQuery, [userIdToDelete], (deleteError) => {
+    if (deleteError) {
+      console.error('Error deleting account:', deleteError);
+      return res.status(500).json({ message: 'Error deleting account' });
+    }
+
+    return res.status(200).json({ message: 'Account deleted successfully' });
   });
 });
 

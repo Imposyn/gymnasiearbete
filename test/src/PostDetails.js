@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import BlockUserButton from './BlockUserButton';
 import './App.css';
 
-const PostDetails = ({ post, token, onCommentSubmit, isLoggedIn, username, setMessage, 
-  blockedUserId, authToken, onBlock, isBlockedUserPage }) => {
+const PostDetails = ({ post, isLoggedIn, username, setMessage,
+  authToken, onBlock }) => {
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState([]);
   const [postDetails, setPostDetails] = useState({});
@@ -34,26 +34,26 @@ const PostDetails = ({ post, token, onCommentSubmit, isLoggedIn, username, setMe
         fetchUserVotes(post.PostID, fetchedCommentId);
   
         // Fetch votes for the post
-        const postVotes = await fetchPostVotes(post.PostID, token);
+        const postVotes = await fetchPostVotes(post.PostID, authToken);
         setPostVotes(postVotes); // Update postVotes state
     
         // Fetch votes for each comment
         for (const comment of comments) {
-          const commentVotes = await fetchCommentVotes(comment.CommentID, token);
+          const commentVotes = await fetchCommentVotes(comment.CommentID, authToken);
           console.log(`Comment Votes for comment ${comment.CommentID}:`, commentVotes);
         }
       };
   
       fetchData();
     }
-  }, [post.PostID, isFetched, comments, token]);  
+  }, [post.PostID, isFetched, comments, authToken]);  
   
   const fetchPostAndComments = async (postId) => {
     try {
       const response = await fetch(`http://localhost:8000/posts/${postId}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
       });
   
@@ -96,7 +96,7 @@ const PostDetails = ({ post, token, onCommentSubmit, isLoggedIn, username, setMe
   
         // Fetch votes for each comment after updating the state
         for (const comment of sortedComments) {
-          const commentVotes = await fetchCommentVotes(comment.CommentID, token);
+          const commentVotes = await fetchCommentVotes(comment.CommentID, authToken);
           // Update the commentVotes state
           setCommentVotes((prevCommentVotes) => ({
             ...prevCommentVotes,
@@ -110,12 +110,12 @@ const PostDetails = ({ post, token, onCommentSubmit, isLoggedIn, username, setMe
   };
 
 // For posts
-const fetchPostVotes = async (postId, token) => {
+const fetchPostVotes = async (postId, authToken) => {
   try {
       const response = await fetch(`http://localhost:8000/post/${postId}/votes`, {
           method: 'GET',
           headers: {
-              'Authorization': `Bearer ${token}`,
+              'Authorization': `Bearer ${authToken}`,
           },
       });
 
@@ -136,12 +136,12 @@ const fetchPostVotes = async (postId, token) => {
 };
 
 // For comments
-const fetchCommentVotes = async (commentId, token) => {
+const fetchCommentVotes = async (commentId, authToken) => {
   try {
       const response = await fetch(`http://localhost:8000/comment/${commentId}/votes`, {
           method: 'GET',
           headers: {
-              'Authorization': `Bearer ${token}`,
+              'Authorization': `Bearer ${authToken}`,
           },
       });
 
@@ -162,7 +162,6 @@ const fetchCommentVotes = async (commentId, token) => {
 };
 
 const handleBlockUser = async (blockedUserId) => {
-  console.log('authToken:', authToken); // Add this line
   if (blockedUserId === undefined) {
     setMessage('Invalid user ID');
     return;
@@ -180,27 +179,27 @@ const handleBlockUser = async (blockedUserId) => {
         blockedUserId: blockedUserId,
       }),
     });
-
-
-    if (response.ok) {
-      // Check if the user was successfully blocked
-      setMessage('User blocked successfully');
-      setIsBlocked(true); // Set isBlocked to true
-      if (onBlock) {
-        onBlock(); // Handle blocking action
+    
+        if (response.ok) {
+          // Check if the user was successfully blocked
+          setMessage('User blocked successfully');
+          setIsBlocked(true); // Set isBlocked to true
+          if (onBlock) {
+            onBlock(); // Handle blocking action
+          }
+    
+          // Show an alert when the user is blocked
+          window.alert('User blocked successfully');
+        } else {
+          // Log the status and response text for debugging
+          setMessage('Error blocking user');
+        }
+      } catch (error) {
+        setMessage('Error blocking user');
+        console.error('Error blocking user:', error);
       }
-    } else {
-      // Log the status and response text for debugging
-      console.log('authToken:', authToken);
-      console.error(`Error blocking user - Status: ${response.status}, Response: ${await response.text()}`);
-      setMessage('Error blocking user');
-    }
-  } catch (error) {
-    setMessage('Error blocking user');
-    console.error('Error blocking user:', error);
-  }
-};
-
+    };
+    
   const handleSortChange = async (sortOption) => {
     if (sortOption === 'latest') {
       // Sort by latest comment logic
@@ -223,7 +222,7 @@ const handleBlockUser = async (blockedUserId) => {
       const response = await fetch(`http://localhost:8000/api/tags/${postId}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
       });
       if (!response.ok) {
@@ -243,7 +242,7 @@ const handleBlockUser = async (blockedUserId) => {
       const postVoteResponse = await fetch(`http://localhost:8000/api/posts/${postId}/user-vote`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
       });
   
@@ -256,7 +255,7 @@ const handleBlockUser = async (blockedUserId) => {
 const votesResponse = await fetch(`http://localhost:8000/api/comments/${postId}/votes`, {
   method: 'GET',
   headers: {
-    'Authorization': `Bearer ${token}`,
+    'Authorization': `Bearer ${authToken}`,
   },
 });
 
@@ -275,7 +274,7 @@ console.error('Error fetching user votes:', error);
       const response = await fetch(`http://localhost:8000/api/posts/${post.PostID}/upvote`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
       });
   
@@ -294,7 +293,7 @@ console.error('Error fetching user votes:', error);
       const response = await fetch(`http://localhost:8000/api/posts/${post.PostID}/downvote`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
       });
   
@@ -313,7 +312,7 @@ console.error('Error fetching user votes:', error);
       const response = await fetch(`http://localhost:8000/api/comments/${commentId}/upvote`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
       });
   
@@ -333,7 +332,7 @@ console.error('Error fetching user votes:', error);
       const response = await fetch(`http://localhost:8000/api/comments/${commentId}/downvote`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
       });
   
@@ -359,7 +358,7 @@ console.error('Error fetching user votes:', error);
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           postId: post.PostID,
@@ -394,7 +393,7 @@ console.error('Error fetching user votes:', error);
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           postId: post.PostID,
@@ -426,7 +425,7 @@ console.error('Error fetching user votes:', error);
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           updatedCommentText: editedCommentText,
@@ -456,18 +455,24 @@ console.error('Error fetching user votes:', error);
 
   const handleSaveEditedPost = async () => {
     try {
+      // Check if either title or content is empty
+      if (!editedPostTitle.trim() || !editedPostContent.trim()) {
+        window.alert('Title and content cannot be empty.');
+        return;
+      }
+  
       const response = await fetch(`http://localhost:8000/update-post/${post.PostID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           updatedTitle: editedPostTitle,
           updatedContent: editedPostContent,
           updatedVisibility: postVisibility,
           updatedTag: editedTag,
-          postId: post.PostID
+          postId: post.PostID,
         }),
       });
   
@@ -476,27 +481,33 @@ console.error('Error fetching user votes:', error);
       }
   
       // Create a new tag if it doesn't exist in the database and associate it with the edited post
-if (editedTag) {
-  await fetch('http://localhost:8000/api/tags', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ 
-      name: editedTag,
-      postId: post.PostID
-    })
-  });
-}
+      if (editedTag) {
+        await fetch('http://localhost:8000/api/tags', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: editedTag,
+            postId: post.PostID,
+          }),
+        });
+      }
   
       setIsEditingPost(false);
-      setEditedTag(editedTag); 
+      setEditedTag(editedTag);
       fetchPostAndComments(post.PostID);
   
       setMessage('Post updated successfully');
+  
+      // Display an alert when the post is saved successfully
+      window.alert('Post updated successfully');
     } catch (error) {
       setMessage('Error updating post');
       console.error('Error updating post:', error);
+  
+      // Display an alert when there's an error saving the post
+      window.alert('Error updating post');
     }
   };  
 
@@ -522,7 +533,7 @@ if (editedTag) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           post_id: post.PostID,
@@ -555,7 +566,7 @@ if (editedTag) {
       const response = await fetch(`http://localhost:8000/api/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
       });
   
@@ -579,12 +590,14 @@ if (editedTag) {
       const response = await fetch(`http://localhost:8000/api/posts/${post.PostID}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${authToken}`,
         },
       });
   
       if (response.ok) {
         setMessage('Post deleted successfully');
+        // Display an alert when the post is deleted successfully
+        window.alert('Post deleted successfully');
       } else {
         console.error('Error deleting post');
       }
@@ -671,7 +684,7 @@ if (editedTag) {
                   {comment.UserID !== undefined && comment.UserID !== username && (
                     <BlockUserButton
                       blockedUserId={comment.UserID}
-                      authToken={token}
+                      authauthToken={authToken}
                       isBlockedUserPage={true}
                     />
                   )}
@@ -692,6 +705,104 @@ if (editedTag) {
     </div>
   );  
 
+  const handleEditVote = async (postId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/posts/${postId}/edit-vote`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+      });
+  
+      if (response.ok) {
+        // Update the local state or perform any other necessary action
+        alert('Vote updated successfully');
+      } else {
+        // Display error message
+        alert('Error updating vote');
+      }
+    } catch (error) {
+      console.error('Error updating vote:', error);
+      alert('Error updating vote');
+    }
+  };  
+  
+  const handleRemoveVote = async (postId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/posts/${postId}/remove-vote`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+      });
+  
+      if (response.ok) {
+        // Update the local state or perform any other necessary action
+        alert('Vote removed successfully');
+      } else {
+        // Display error message
+        alert('Error removing vote');
+      }
+    } catch (error) {
+      console.error('Error removing vote:', error);
+      alert('Error removing vote');
+    }
+  };
+  
+  const handleEditTag = async (tagId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/tags/${tagId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          name: editedTag, 
+        }),
+      });
+  
+      if (response.ok) {
+        // Update the local tag state
+        setTag(editedTag);
+        // Display success message
+        alert('Tag updated successfully');
+      } else {
+        // Display error message
+        alert('Error updating tag');
+      }
+    } catch (error) {
+      console.error('Error updating tag:', error);
+      alert('Error updating tag');
+    }
+  };  
+
+  const handleDeleteTag = async (tagId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/tags/${tagId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
+      });
+  
+      if (response.ok) {
+        // Update the local tag state
+        setTag('');
+        // Display success message
+        alert('Tag deleted successfully');
+      } else {
+        // Display error message
+        alert('Error deleting tag');
+      }
+    } catch (error) {
+      console.error('Error deleting tag:', error);
+      alert('Error deleting tag');
+    }
+  };
+  
   return (
     <div>
       {isEditingPost ? (
@@ -726,6 +837,19 @@ if (editedTag) {
               </button>
               <button className="buttons" onClick={() => setIsEditingPost(false)}>
                 Cancel
+              </button>
+              {/* Include the new buttons for edit vote and delete tag here */}
+              <button className="buttons" onClick={() => handleEditVote(post.PostID)}>
+                Edit Vote
+              </button>
+              <button className="buttons" onClick={() => handleRemoveVote(post.PostID)}>
+                Remove Vote
+              </button>
+              <button className="buttons" onClick={() => handleEditTag(post.PostID)}>
+                Edit Tag
+              </button>
+              <button className="buttons" onClick={() => handleDeleteTag(post.PostID)}>
+                Delete Tag
               </button>
             </div>
           </div>

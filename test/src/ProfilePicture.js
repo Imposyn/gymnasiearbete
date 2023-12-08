@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 const ProfilePicture = ({ authToken }) => {
   const [profilePictureUrl, setProfilePictureUrl] = useState('');
-  const [newImageUrl, setNewImageUrl] = useState(''); // New state for the input field
+  const [newImageUrl, setNewImageUrl] = useState('');
 
   const fetchProfilePicture = async () => {
     try {
@@ -38,12 +38,11 @@ const ProfilePicture = ({ authToken }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ profilePictureUrl: newImageUrl }), // Use the newImageUrl state
+        body: JSON.stringify({ profilePictureUrl: newImageUrl }),
       });
 
       if (response.ok) {
-        console.log('Profile picture updated successfully');
-        // Fetch the updated profile picture after updating
+        window.alert('Profile picture updated successfully');
         fetchProfilePicture();
       } else {
         console.error('Error updating profile picture:', response.status);
@@ -61,12 +60,11 @@ const ProfilePicture = ({ authToken }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ profilePictureUrl: 'DEFAULT_IMAGE_URL' }), // Replace 'DEFAULT_IMAGE_URL' with the default image URL
+        body: JSON.stringify({ profilePictureUrl: 'DEFAULT_IMAGE_URL' }),
       });
 
       if (response.ok) {
-        console.log('Profile picture created successfully');
-        // Fetch the created profile picture after creating
+        window.alert('Profile picture created successfully');
         fetchProfilePicture();
       } else {
         console.error('Error creating profile picture:', response.status);
@@ -93,13 +91,17 @@ const ProfilePicture = ({ authToken }) => {
               value={newImageUrl}
               onChange={(e) => setNewImageUrl(e.target.value)}
             />
-<button className="buttons" onClick={handleUpdateProfilePicture}>Update Profile Picture</button>
+            <button className="buttons" onClick={handleUpdateProfilePicture}>
+              Update Profile Picture
+            </button>
           </div>
         </div>
       ) : (
         <div>
           <p>No profile picture available</p>
-          <button className="buttons" onClick={handleCreateProfilePicture}>Create Profile Picture</button>
+          <button className="buttons" onClick={handleCreateProfilePicture}>
+            Create Profile Picture
+          </button>
         </div>
       )}
     </div>
