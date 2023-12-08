@@ -161,40 +161,45 @@ const fetchCommentVotes = async (commentId, token) => {
   }
 };
 
-  const handleBlockUser = async (blockedUserId) => {
-    if (blockedUserId === undefined) {
-      setMessage('Invalid user ID');
-      return;
-    }
-  
-    // Continue with block user logic
-    try {
-      const response = await fetch('http://localhost:8000/block-user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({
-          blockedUserId: blockedUserId,
-        }),
-      });
-  
-      if (response.ok) {
-        // Check if the user was successfully blocked
-        setMessage('User blocked successfully');
-        setIsBlocked(true); // Set isBlocked to true
-        if (onBlock) {
-          onBlock(); // Handle blocking action
-        }
-      } else {
-        setMessage('Error blocking user');
+const handleBlockUser = async (blockedUserId) => {
+  console.log('authToken:', authToken); // Add this line
+  if (blockedUserId === undefined) {
+    setMessage('Invalid user ID');
+    return;
+  }
+
+  // Continue with block user logic
+  try {
+    const response = await fetch('http://localhost:8000/block-user', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`,
+      },      
+      body: JSON.stringify({
+        blockedUserId: blockedUserId,
+      }),
+    });
+
+
+    if (response.ok) {
+      // Check if the user was successfully blocked
+      setMessage('User blocked successfully');
+      setIsBlocked(true); // Set isBlocked to true
+      if (onBlock) {
+        onBlock(); // Handle blocking action
       }
-    } catch (error) {
+    } else {
+      // Log the status and response text for debugging
+      console.log('authToken:', authToken);
+      console.error(`Error blocking user - Status: ${response.status}, Response: ${await response.text()}`);
       setMessage('Error blocking user');
-      console.error('Error blocking user:', error);
     }
-  };  
+  } catch (error) {
+    setMessage('Error blocking user');
+    console.error('Error blocking user:', error);
+  }
+};
 
   const handleSortChange = async (sortOption) => {
     if (sortOption === 'latest') {
@@ -368,17 +373,17 @@ console.error('Error fetching user votes:', error);
         throw new Error('Error submitting comment');
       }
   
+      const data = await response.json();
+  
       fetchCommentsForPost(post.PostID);
   
       setCommentText('');
-      setMessage('Comment submitted successfully');
   
-      onCommentSubmit({
-        postId: post.PostID,
-        commentText: commentText,
-      });
+      // Display the server response using an alert
+      alert(data.message || 'Comment submitted successfully');
     } catch (error) {
-      setMessage('Error submitting comment');
+      // If there's an error, show an alert with an error message
+      alert('Error submitting comment');
       console.error('Error submitting comment:', error);
     }
   };  
@@ -427,22 +432,24 @@ console.error('Error fetching user votes:', error);
           updatedCommentText: editedCommentText,
         }),
       });
-
+  
       if (!response.ok) {
         throw new Error('Error updating comment');
       }
-
+  
       setEditingCommentId(null);
       setEditedCommentText('');
       fetchCommentsForPost(post.PostID);
-
-      setMessage('Comment updated successfully');
+  
+      // Display success message using an alert
+      alert('Comment updated successfully');
     } catch (error) {
-      setMessage('Error updating comment');
+      // Display error message using an alert
+      alert('Error updating comment');
       console.error('Error updating comment:', error);
     }
   };
-
+  
   const handleEditPost = () => {
     setIsEditingPost(true);
   };
@@ -496,9 +503,21 @@ if (editedTag) {
   const handleReply = (commentId) => {
     setReplyingToCommentId(commentId);
   };
-
+  
   const handleReplySubmit = async (parentCommentId) => {
     try {
+      // Ensure that parentCommentId is not undefined
+      if (parentCommentId === undefined) {
+        alert('Invalid parent comment ID');
+        return;
+      }
+  
+      // Check if reply text is empty
+      if (!replyText.trim()) {
+        alert('Reply cannot be empty');
+        return;
+      }
+  
       const response = await fetch('http://localhost:8000/add-reply', {
         method: 'POST',
         headers: {
@@ -512,22 +531,48 @@ if (editedTag) {
           parent_comment_id: parentCommentId,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error('Error submitting reply');
+  
+      if (response.ok) {
+        // Fetch comments again after reply submission
+        fetchCommentsForPost(post.PostID);
+        // Display success message using an alert
+        alert('Reply submitted successfully');
+      } else {
+        console.error('Error submitting reply');
+        // Display error message using an alert
+        alert('Error submitting reply');
       }
-
-      fetchCommentsForPost(post.PostID);
-
-      setReplyText('');
-      setMessage('Reply submitted successfully');
     } catch (error) {
-      setMessage('Error submitting reply');
       console.error('Error submitting reply:', error);
     } finally {
       setReplyingToCommentId(null);
+      setReplyText(''); // Clear the reply text after submission
     }
-  };
+  };  
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+  
+      if (response.ok) {
+        // Fetch comments again after deletion
+        fetchCommentsForPost(post.PostID);
+        // Display success message using an alert
+        alert('Comment deleted successfully');
+      } else {
+        console.error('Error deleting comment');
+        // Display error message using an alert
+        alert('Error deleting comment');
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };  
 
   const handleDeletePost = async () => {
     try {
@@ -547,6 +592,105 @@ if (editedTag) {
       console.error('Error deleting post:', error);
     }
   };  
+
+  const renderComments = (comments, parentCommentId) => (
+    <div style={{ marginLeft: parentCommentId ? '20px' : '0' }}>
+      {comments
+        .filter(comment => comment.ParentCommentID === parentCommentId)
+        .map((comment, index) => (
+          <div key={index} className={comment.ParentCommentID !== null ? 'reply' : 'comment'}>
+            {editingCommentId === comment.CommentID ? (
+              <div>
+                <textarea
+                  value={editedCommentText}
+                  onChange={(e) => setEditedCommentText(e.target.value)}
+                />
+                <button className="buttons" onClick={() => handleSaveEditedComment(comment.CommentID)}>
+                  Save Comment
+                </button>
+              </div>
+            ) : (
+              <div>
+            <strong>{comment.Username}</strong>
+              <br></br>
+              {comment.Content}
+                {comment.ParentCommentID && (
+                  <span style={{ marginLeft: '10px' }}>
+                  </span>
+                )}
+                <div className="dropdown">
+                  <button className="buttons buttons-dropdown" onClick={() => handleUpvoteComment(comment.CommentID)}>
+                    Actions
+                  </button>
+                  <div className="dropdown-content">
+                    <button className="buttons" onClick={() => handleUpvoteComment(comment.CommentID)}>
+                      Upvote
+                    </button>
+                    <button className="buttons" onClick={() => handleDownvoteComment(comment.CommentID)}>
+                      Downvote
+                    </button>
+                    <button className="buttons" onClick={() => handleEditComment(comment.CommentID)}>
+                      Edit Comment
+                    </button>
+                    <button className="buttons" onClick={() => handleDeleteComment(comment.CommentID)}>
+                      Delete Comment
+                    </button>
+                    <button className="buttons" onClick={() => handleReply(comment.CommentID)}>
+                      Reply
+                    </button>
+                    <button className="buttons" onClick={() => handleBlockUser(comment.UserID)}>
+                      Block User
+                    </button>
+                  </div>
+                </div>
+                {isLoggedIn && (
+                  <div>
+                    Points: {commentVotes[comment.CommentID]?.points || 0}
+                    {userCommentVotes[comment.CommentID] === 'upvote' ? (
+                      <button disabled>Upvoted</button>
+                    ) : userCommentVotes[comment.CommentID] === 'downvote' ? (
+                      <button disabled>Downvoted</button>
+                    ) : (
+                      <div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {replyingToCommentId === comment.CommentID && (
+                  <div>
+                    <textarea
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                    />
+                    <button className="buttons" onClick={() => handleReplySubmit(comment.CommentID)}>
+                      Submit Reply
+                    </button>
+                  </div>
+                )}
+                <div>
+                  {comment.UserID !== undefined && comment.UserID !== username && (
+                    <BlockUserButton
+                      blockedUserId={comment.UserID}
+                      authToken={token}
+                      isBlockedUserPage={true}
+                    />
+                  )}
+                  {comment.UserID === username && (
+                    <>
+                      <button onClick={() => handleEditComment(comment.CommentID)}>
+                        Edit Comment
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+            {/* Recursively render replies */}
+            {renderComments(comments, comment.CommentID)}
+          </div>
+        ))}
+    </div>
+  );  
 
   return (
     <div>
@@ -591,7 +735,7 @@ if (editedTag) {
             value={editedTag}
             onChange={(e) => setEditedTag(e.target.value)}
           />
-        </div>  
+        </div>
       ) : (
         <div>
           <hr />
@@ -600,40 +744,40 @@ if (editedTag) {
           <p className="posted-by">Posted by: {postDetails.Author}</p>
           <p className="post-tag">Post tag: {tag}</p>
           {isLoggedIn && (
-      <div>
-      <div className="dropdown">
-        <button className="buttons buttons-dropdown" onClick={handleUpvotePost}>
-          Actions
-        </button>
-        <div className="dropdown-content">
-          <button className="buttons" onClick={handleUpvotePost}>
-            Upvote
-          </button>
-          <button className="buttons" onClick={handleDownvotePost}>
-            Downvote
-          </button>  
-                    <button className="buttons" onClick={handleEditPost}>
-                      Edit Post
-                    </button>
-                    <button className="buttons" onClick={handleSavePost}>
-                      Save Post
-                    </button>
-                    <button className="buttons" onClick={handleDeletePost}>
-                      Delete Post
-                    </button>
-                  </div>
+            <div>
+              <div className="dropdown">
+                <button className="buttons buttons-dropdown" onClick={handleUpvotePost}>
+                  Actions
+                </button>
+                <div className="dropdown-content">
+                  <button className="buttons" onClick={handleUpvotePost}>
+                    Upvote
+                  </button>
+                  <button className="buttons" onClick={handleDownvotePost}>
+                    Downvote
+                  </button>
+                  <button className="buttons" onClick={handleEditPost}>
+                    Edit Post
+                  </button>
+                  <button className="buttons" onClick={handleSavePost}>
+                    Save Post
+                  </button>
+                  <button className="buttons" onClick={handleDeletePost}>
+                    Delete Post
+                  </button>
                 </div>
-{userPostVote === 'upvote' ? (
-      <button disabled>Upvoted</button>
-    ) : (
-      <div></div>
-    )}          
-            {userPostVote === 'downvote' ? (
+              </div>
+              {userPostVote === 'upvote' ? (
+                <button disabled>Upvoted</button>
+              ) : (
+                <div></div>
+              )}
+              {userPostVote === 'downvote' ? (
                 <button disabled>Downvoted</button>
               ) : (
                 <div></div>
               )}
-Points: {postVotes.points}
+              Points: {postVotes.points}
             </div>
           )}
         </div>
@@ -652,108 +796,22 @@ Points: {postVotes.points}
           </button>
           <br />
           <div className="dropdown">
-          <button className="buttons buttons-dropdown">
-            Sort comment by
-          </button>
-          <div className="dropdown-content">
-            <button className="buttons" onClick={() => handleSortChange('latest')}>
-              Sort by latest comment
+            <button className="buttons buttons-dropdown">
+              Sort comment by
             </button>
-            <button className="buttons" onClick={() => handleSortChange('points')}>
-              Sort by most points
-            </button>
-          </div>
-        </div>
-        </div>
-      )}
-      {comments.map((comment, index) => (
-        <div key={index} className={comment.ParentCommentID !== null ? 'reply' : 'comment'}>
-  {editingCommentId === comment.CommentID ? (
-            <div>
-              <textarea
-                value={editedCommentText}
-                onChange={(e) => setEditedCommentText(e.target.value)}
-              />
-              <button className="buttons" onClick={() => handleSaveEditedComment(comment.CommentID)}>
-                Save Comment
+            <div className="dropdown-content">
+              <button className="buttons" onClick={() => handleSortChange('latest')}>
+                Sort by latest comment
+              </button>
+              <button className="buttons" onClick={() => handleSortChange('points')}>
+                Sort by most points
               </button>
             </div>
-          ) : (
-            <div>
-<strong>Username:</strong> {comment.Username}: <strong>Content:</strong> {comment.Content} <strong>Comment ID:</strong> {comment.CommentID}
-              {comment.ParentCommentID && (
-  <span style={{ marginLeft: '10px' }}>
-    <i>Reply to {comment.ParentCommentID}</i>
-  </span>
-)}
-              <div className="dropdown">
-                <button className="buttons buttons-dropdown" onClick={() => handleUpvoteComment(comment.CommentID)}>
-                  Actions
-                </button>
-                <div className="dropdown-content">
-                  <button className="buttons" onClick={() => handleUpvoteComment(comment.CommentID)}>
-                    Upvote
-                  </button>
-                  <button className="buttons" onClick={() => handleDownvoteComment(comment.CommentID)}>
-                    Downvote
-                  </button>
-                  <button className="buttons" onClick={() => handleEditComment(comment.CommentID)}>
-                    Edit Comment
-                  </button>
-                  <button className="buttons" onClick={() => handleReply(comment.CommentID)}>
-                    Reply
-                  </button>
-                  <button className="buttons" onClick={() => handleBlockUser(comment.UserID)}>
-                    Block User
-                  </button>
-                </div>
-              </div>
-              {isLoggedIn && (
-                <div>
-Points: {commentVotes[comment.CommentID]?.points || 0}
-                  {userCommentVotes[comment.CommentID] === 'upvote' ? (
-                    <button disabled>Upvoted</button>
-                  ) : userCommentVotes[comment.CommentID] === 'downvote' ? (
-                    <button disabled>Downvoted</button>
-                  ) : (
-                    <div>
-                    </div>
-                  )}
-                </div>
-              )}
-              {replyingToCommentId === comment.CommentID && (
-                <div>
-                  <textarea
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                  />
-                  <button className="buttons" onClick={() => handleReplySubmit(comment.CommentID)}>
-                    Submit Reply
-                  </button>
-                </div>
-              )}
-              <div>
-                {comment.UserID !== undefined && comment.UserID !== username && (
-                  <BlockUserButton
-                    blockedUserId={comment.UserID}
-                    authToken={token}
-                    isBlockedUserPage={true}
-                  />
-                )}
-                {comment.UserID === username && (
-                  <>
-                    <button onClick={() => handleEditComment(comment.CommentID)}>
-                      Edit Comment
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
+          </div>
         </div>
-      ))}
+      )}
+      {renderComments(comments, null)}
     </div>
   );
   };
-  
   export default PostDetails;  

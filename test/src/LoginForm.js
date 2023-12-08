@@ -7,7 +7,7 @@ const LoginForm = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState(null); // New state for messages
 
-  const handleLogin = async () => {
+  const handleLogin = async (isLoggedIn, authenticateToken) => {
     try {
       const response = await fetch('http://localhost:8000/login', {
         method: 'POST',

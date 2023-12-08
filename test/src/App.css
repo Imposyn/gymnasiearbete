@@ -318,8 +318,7 @@ body {
 
 .reply {
   border: 1px solid red;
-  margin-left: 20px; 
-  padding: 10px;
+  margin-left: -25px !important; /* Adjusted margin with !important */
+  padding: 1px !important; /* Adjusted padding with !important */
+  max-width: 200px; /* Adjust the value to your preference */
 }
-
-/*användarvänlighet (screen readers, SEO)*/

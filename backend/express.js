@@ -146,9 +146,6 @@ app.post('/create-post', authenticateToken, (req, res) => {
         return res.status(500).json({ message: 'Error creating post' });
       }
 
-      console.log('Post created successfully:', { title, content, createdAt, userId });
-
-      
       const postId = results.insertId;
       const selectPostSQL = 'SELECT * FROM Posts WHERE PostID = ?';
       db.query(selectPostSQL, [postId], (error, postResults) => {
@@ -309,17 +306,25 @@ app.get('/comments', (req, res) => {
 });
 
 app.put('/update-comment/:commentId', authenticateToken, (req, res) => {
-  const { commentText } = req.body;
   const { commentId } = req.params;
-  
-  const userId = req.user.userId; 
+  const { updatedCommentText } = req.body;
+  const userId = req.user.userId;
 
-  const checkAuthorizationSQL = 'SELECT UserID FROM Comments WHERE CommentID = ?';
-  db.query(checkAuthorizationSQL, [commentId], (authError, authResults) => {
-    if (authError) {
-      console.error('Error checking authorization:', authError);
-      return res.status(500).json({ message: 'Error checking authorization' });
+  const updateCommentSQL = 'UPDATE Comments SET Content = ?, LastModifiedAt = CURRENT_TIMESTAMP WHERE CommentID = ? AND UserID = ?';
+
+  db.query(updateCommentSQL, [updatedCommentText, commentId, userId], (error, results) => {
+    if (error) {
+      console.error('Error updating comment:', error);
+      res.status(500).json({ message: 'Error updating comment' });
+    } else if (results.affectedRows === 0) {
+      res.status(403).json({ message: 'Unauthorized or comment not found' });
+    } else {
+      res.json({ message: 'Comment updated successfully' });
     }
+  });
+});
+
+// Add reply route
 app.post('/add-reply', (req, res) => {
   const { post_id, user_id, content, parent_comment_id } = req.body;
   const token = req.headers.authorization.split(' ')[1];
@@ -329,11 +334,9 @@ app.post('/add-reply', (req, res) => {
   }
 
   try {
-
     const decodedToken = jwt.verify(token, jwtSecret);
     const userId = decodedToken.userId;
 
-    
     const sql = 'INSERT INTO Comments (PostID, UserID, Content, ParentCommentID, CreatedAt, DisplayOrder) VALUES (?, ?, ?, ?, NOW(), ?)';
 
     db.query(sql, [post_id, userId, content, parent_comment_id, 100], (error, results) => {
@@ -348,8 +351,6 @@ app.post('/add-reply', (req, res) => {
     console.error('Error decoding token:', error);
     res.status(401).json({ message: 'Invalid token' });
   }
-});
-});
 });
 
 app.put('/update-profile', authenticateToken, (req, res) => {
@@ -500,45 +501,16 @@ app.get('/saved-posts', authenticateToken, (req, res) => {
 
   const selectSavedPostsSQL = 'SELECT sp.PostID, p.Title, p.Content FROM SavedPosts sp INNER JOIN Posts p ON sp.PostID = p.PostID WHERE sp.UserID = ?';
 
-  try {
-    const decodedToken = jwt.verify(token, jwtSecret);
-
-    
-    const sqlCheckAuthorization = 'SELECT UserID FROM Comments WHERE CommentID = ?';
-    db.query(sqlCheckAuthorization, [commentId], (authError, authResults) => {
-      if (authError) {
-        console.error('Error checking authorization:', authError);
-        return res.status(500).json({ message: 'Error checking authorization' });
-      }
-
-      if (authResults.length > 0) {
-        const commentUserId = authResults[0].UserID;
-
-        if (decodedToken.userId !== commentUserId) {
-          return res.status(403).json({ message: 'Unauthorized to delete this comment' });
-        }
-
-       
-        const sqlDeleteComment = 'DELETE FROM Comments WHERE CommentID = ?';
-        db.query(sqlDeleteComment, [commentId], (deleteError) => {
-          if (deleteError) {
-            console.error('Error deleting comment:', deleteError);
-            return res.status(500).json({ message: 'Error deleting comment' });
-          }
-
-          console.log('Comment deleted successfully:', commentId);
-          res.json({ message: 'Comment deleted successfully' });
-        });
-      } else {
-        res.status(404).json({ message: 'Comment not found' });
-      }
-    });
-  } catch (error) {
-    console.error('Error decoding token:', error);
-    return res.status(401).json({ message: 'Invalid token' });
-  }
+  db.query(selectSavedPostsSQL, [userId], (error, results) => {
+    if (error) {
+      console.error('Error fetching saved posts:', error);
+      res.status(500).json({ message: 'Error fetching saved posts' });
+    } else {
+      // Extract the saved post IDs and additional post information
+      res.json(results);
+    }
+  });
 });
-
 
 app.get('/get-current-email', authenticateToken, (req, res) => {
   const userId = req.user.userId;
@@ -703,19 +675,33 @@ app.post('/unblock-user', authenticateToken, (req, res) => {
 });
 
 app.post('/save-post', authenticateToken, (req, res) => {
-  const { postId } = req.body;
-  const userId = req.user.userId;
+  try {
+    const { postId } = req.body;
+    const userId = req.user.userId;
 
-  const insertSavedPostSQL = 'INSERT INTO SavedPosts (UserID, PostID) VALUES (?, ?)';
-
-  db.query(insertSavedPostSQL, [userId, postId], (error, results) => {
-    if (error) {
-      console.error('Error saving post:', error);
-      res.status(500).json({ message: 'Error saving post' });
-    } else {
-      res.json({ message: 'Post saved successfully' });
+    if (!postId || !userId) {
+      console.error('Invalid request data');
+      return res.status(400).json({ message: 'Invalid request data' });
     }
-  });
+
+    console.log('Saving post for user:', userId, 'Post ID:', postId);
+
+    const insertSavedPostSQL = 'INSERT INTO SavedPosts (UserID, PostID) VALUES (?, ?)';
+
+    db.query(insertSavedPostSQL, [userId, postId], (error, results) => {
+      if (error) {
+        console.error('Error saving post:', error);
+        return res.status(500).json({ message: 'Error saving post' });
+      }
+
+      console.log('Post saved successfully for user:', userId, 'Post ID:', postId);
+
+      res.json({ message: 'Post saved successfully' });
+    });
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return res.status(401).json({ message: 'Invalid token' });
+  }
 });
 
 app.get('/other-users', (req, res) => {
@@ -1219,6 +1205,47 @@ app.get('/comment/:commentId/votes', authenticateToken, (req, res) => {
     const points = upvotes - downvotes;
 
     res.json({ upvotes, downvotes, points });
+  });
+});
+
+app.delete('/api/comments/:commentId', authenticateToken, (req, res) => {
+  const { commentId } = req.params;
+  const userId = req.user.userId;
+
+  // Check if the user is blocked
+  if (blockedUsers.has(userId)) {
+    return res.status(403).json({ message: 'User is blocked' });
+  }
+
+  // Check if the comment exists
+  const checkCommentQuery = 'SELECT * FROM Comments WHERE CommentID = ?';
+  db.query(checkCommentQuery, [commentId], (checkCommentError, checkCommentResults) => {
+    if (checkCommentError) {
+      console.error('Error checking comment:', checkCommentError);
+      return res.status(500).json({ message: 'Database error while checking comment.' });
+    }
+
+    if (checkCommentResults.length === 0) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    const comment = checkCommentResults[0];
+
+    // Check if the user is the author of the comment or the post
+    if (comment.UserID !== userId) {
+      return res.status(403).json({ message: 'Unauthorized to delete this comment' });
+    }
+
+    // Delete the comment
+    const deleteCommentQuery = 'DELETE FROM Comments WHERE CommentID = ?';
+    db.query(deleteCommentQuery, [commentId], (deleteCommentError) => {
+      if (deleteCommentError) {
+        console.error('Error deleting comment:', deleteCommentError);
+        return res.status(500).json({ message: 'Database error while deleting comment.' });
+      }
+
+      res.json({ message: 'Comment deleted successfully' });
+    });
   });
 });
 
