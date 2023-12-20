@@ -5,12 +5,27 @@ body {
 @media (max-width: 768px) {
   body {
     font-size: 16px;
+    .post-item {
+      border: 1px solid gray;
+      padding: 10px;
+      margin: 0px;
+      cursor: pointer;
+      width: 100%;
+    }    
   }
 }
 
 @media (max-width: 480px) {
   .search-bar {
     display: none !important; /*important är till för att prioritera den här regeln*/
+  }
+  .logo {
+    margin-right: 150px;
+    margin-bottom: -70px;
+  }
+  .auth-buttons {
+    margin-left: 120px;
+    margin: none;
   }
 }
 
@@ -23,10 +38,6 @@ body {
   .header {
     flex-direction: column; /* Stack header items vertically on small screens */
     text-align: center; /* Center-align header content */
-  }
-
-  .logo {
-    width: 120px; /* Adjust logo size for smaller screens */
   }
 }
 
@@ -46,10 +57,10 @@ body {
 .post-item {
   border: 1px solid gray;
   padding: 10px;
-  margin: 10px;
+  margin: 0px;
   cursor: pointer;
   width: 100%;
-}
+}    
 
 .post-item:hover {
   background-color: gray;
@@ -145,7 +156,7 @@ body {
 }
 
 .logo {
-  width: 150px; 
+  width: 100px; 
   cursor: pointer;
 }
 
@@ -197,7 +208,7 @@ body {
   background-color: #38D2D2;
   background-image: radial-gradient(93% 87% at 87% 89%, rgba(0, 0, 0, 0.23) 0%, transparent 86.18%), radial-gradient(66% 66% at 26% 20%, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 69.79%, rgba(255, 255, 255, 0) 100%);
   box-shadow: inset -3px -3px 9px rgba(255, 255, 255, 0.25), inset 0px 3px 9px rgba(255, 255, 255, 0.3), inset 0px 1px 1px rgba(255, 255, 255, 0.6), inset 0px -8px 36px rgba(0, 0, 0, 0.3), inset 0px 1px 5px rgba(255, 255, 255, 0.6), 2px 19px 31px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
+  border-radius: 8px;
   font-weight: bold;
   font-size: 16px;
   border: 0;
@@ -318,7 +329,4 @@ body {
 
 .reply {
   border: 1px solid red;
-  margin-left: -25px !important; /* Adjusted margin with !important */
-  padding: 1px !important; /* Adjusted padding with !important */
-  max-width: 200px; /* Adjust the value to your preference */
 }

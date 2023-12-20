@@ -1345,8 +1345,8 @@ app.delete('/api/comments/:commentId', authenticateToken, (req, res) => {
   });
 });
 
-app.delete('/api/accounts/:userId/delete', (req, res) => {
-  const userIdToDelete = req.params.userId;
+app.delete('/api/accounts/delete', authenticateToken, (req, res) => {
+  const userIdToDelete = req.user.userId;
 
   const deleteAccountQuery = 'DELETE FROM UserAccounts WHERE UserID = ?';
   db.query(deleteAccountQuery, [userIdToDelete], (deleteError) => {

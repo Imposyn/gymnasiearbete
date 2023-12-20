@@ -24,6 +24,32 @@ const PostDetails = ({ post, isLoggedIn, username, setMessage,
   const [isBlocked, setIsBlocked] = useState(false);
   const [postVotes, setPostVotes] = useState({ upvotes: 0, downvotes: 0, points: 0 });
   const [commentVotes, setCommentVotes] = useState({});
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
+
+  
+  const handleKeyDown = (event) => {
+    if (event.key === 'Tab') {
+      const focusedButton = document.activeElement;
+      if (focusedButton) {
+        focusedButton.scrollIntoView();
+      }
+    } else if (event.key === '' && !event) {
+      // Show the dropdown menu when Spacebar is pressed
+      setShowActionsMenu(!showActionsMenu);
+      event.preventDefault(); // Prevent default spacebar behavior
+    } else if (event.key === 'Enter') {
+      // Trigger the action when Enter is pressed
+      console.log('Triggering action on Enter');
+    }
+  };  
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showActionsMenu]);
   
   useEffect(() => {
     if (!isFetched) {
@@ -40,7 +66,6 @@ const PostDetails = ({ post, isLoggedIn, username, setMessage,
         // Fetch votes for each comment
         for (const comment of comments) {
           const commentVotes = await fetchCommentVotes(comment.CommentID, authToken);
-          console.log(`Comment Votes for comment ${comment.CommentID}:`, commentVotes);
         }
       };
   
@@ -111,6 +136,9 @@ const PostDetails = ({ post, isLoggedIn, username, setMessage,
 
 // For posts
 const fetchPostVotes = async (postId, authToken) => {
+  if (!isLoggedIn) {
+    return;
+  }
   try {
       const response = await fetch(`http://localhost:8000/post/${postId}/votes`, {
           method: 'GET',
@@ -137,6 +165,9 @@ const fetchPostVotes = async (postId, authToken) => {
 
 // For comments
 const fetchCommentVotes = async (commentId, authToken) => {
+  if (!isLoggedIn) {
+    return;
+  }
   try {
       const response = await fetch(`http://localhost:8000/comment/${commentId}/votes`, {
           method: 'GET',
@@ -218,6 +249,9 @@ const handleBlockUser = async (blockedUserId) => {
   };  
 
   const fetchTagForPost = async (postId) => {
+    if (!isLoggedIn) {
+      return;
+    }
     try {
       const response = await fetch(`http://localhost:8000/api/tags/${postId}`, {
         method: 'GET',
@@ -238,6 +272,9 @@ const handleBlockUser = async (blockedUserId) => {
   };  
 
   const fetchUserVotes = async (postId) => {
+    if (!isLoggedIn) {
+      return;
+    }
     try {
       const postVoteResponse = await fetch(`http://localhost:8000/api/posts/${postId}/user-vote`, {
         method: 'GET',
@@ -607,7 +644,7 @@ console.error('Error fetching user votes:', error);
   };  
 
   const renderComments = (comments, parentCommentId) => (
-    <div style={{ marginLeft: parentCommentId ? '20px' : '0' }}>
+    <div style={{ marginLeft: parentCommentId ? '0px' : '0' }}>
       {comments
         .filter(comment => comment.ParentCommentID === parentCommentId)
         .map((comment, index) => (
@@ -631,31 +668,33 @@ console.error('Error fetching user votes:', error);
                   <span style={{ marginLeft: '10px' }}>
                   </span>
                 )}
-                <div className="dropdown">
-                  <button className="buttons buttons-dropdown" onClick={() => handleUpvoteComment(comment.CommentID)}>
-                    Actions
-                  </button>
-                  <div className="dropdown-content">
-                    <button className="buttons" onClick={() => handleUpvoteComment(comment.CommentID)}>
-                      Upvote
-                    </button>
-                    <button className="buttons" onClick={() => handleDownvoteComment(comment.CommentID)}>
-                      Downvote
-                    </button>
-                    <button className="buttons" onClick={() => handleEditComment(comment.CommentID)}>
-                      Edit Comment
-                    </button>
-                    <button className="buttons" onClick={() => handleDeleteComment(comment.CommentID)}>
-                      Delete Comment
-                    </button>
-                    <button className="buttons" onClick={() => handleReply(comment.CommentID)}>
-                      Reply
-                    </button>
-                    <button className="buttons" onClick={() => handleBlockUser(comment.UserID)}>
-                      Block User
-                    </button>
-                  </div>
-                </div>
+           <div className="dropdown">
+<button className="buttons buttons-dropdown" onClick={() => comment.CommentID && setShowActionsMenu(!showActionsMenu)}>
+  Actions
+</button>
+  {showActionsMenu && (
+    <div className="dropdown-content">
+      <button className="buttons" onClick={() => handleUpvoteComment(comment.CommentID)}>
+        Upvote
+      </button>
+      <button className="buttons" onClick={() => handleDownvoteComment(comment.CommentID)}>
+        Downvote
+      </button>
+      <button className="buttons" onClick={() => handleEditComment(comment.CommentID)}>
+        Edit Comment
+      </button>
+      <button className="buttons" onClick={() => handleDeleteComment(comment.CommentID)}>
+        Delete Comment
+      </button>
+      <button className="buttons" onClick={() => handleReply(comment.CommentID)}>
+        Reply
+      </button>
+      <button className="buttons" onClick={() => handleBlockUser(comment.UserID)}>
+        Block User
+      </button>
+    </div>
+  )}
+</div>
                 {isLoggedIn && (
                   <div>
                     Points: {commentVotes[comment.CommentID]?.points || 0}

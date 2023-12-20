@@ -196,7 +196,7 @@ const Profile = ({ authToken, userId }) => {
     if (window.confirm('Are you sure you want to delete your account?')) {
       try {
         console.log('Deleting account...');
-        const response = await fetch(`http://localhost:8000/api/accounts/${userId}/delete`, {
+        const response = await fetch(`http://localhost:8000/api/accounts/delete`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${authToken}`,
@@ -205,7 +205,7 @@ const Profile = ({ authToken, userId }) => {
   
         if (response.ok) {
           // Handle successful deletion
-          console.log('Account deleted successfully');
+          alert('Account deleted successfully');
         } else {
           // Handle deletion error
           console.error('Error deleting account:', response.status);

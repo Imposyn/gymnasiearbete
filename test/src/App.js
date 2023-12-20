@@ -20,39 +20,41 @@ const App = () => {
   const [message, setMessage] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [profilePictureUrl, setProfilePictureUrl] = useState('');
-  const [showSignupLink, setShowSignupLink] = useState(false);
-  const [userId, setUserId] = useState(null);
+  const [showSignupLink, setShowSignupLink] = useState(false);  
 
-  const fetchUserId = async () => {
-    try {
-      const response = await fetch(`http://localhost:8000/users/${userId}` , {
-        headers: {
-          Authorization: `Bearer ${token}`, // Assuming token is the authentication token
-        },
-      });
-  
-      if (response.ok) {
-        const userData = await response.json();
-        const userId = userData.UserID; // Extract userId from the response
-        console.log('User ID:', userId);
-      } else if (response.status === 404) {
-        console.log('User not found');
-      } else {
-        console.error('Error fetching user:', response.status);
+useEffect(() => {
+  const handleKeyDown = (event) => {
+    // Check if the pressed key is 'Tab', 'Enter', or 'Space'
+    if (event.key === 'Tab') {
+      // Scroll down to the posts when Tab is pressed
+      const postListElement = document.getElementById('postList');
+      if (postListElement) {
+        postListElement.scrollIntoView();
       }
-    } catch (error) {
-      console.error('Error fetching user:', error);
+    } else if (event.key === 'Enter') {
+      // Perform the click action when Enter is pressed
+      // You can customize this based on the current focused element
+      // For example, you can use refs to track the focused element
+      // and trigger its click method
+      if (document.activeElement && document.activeElement.click) {
+        document.activeElement.click();
+      }
+    } else if (event.key === ' ' || event.key === 'Spacebar') {
+      // Trigger an action when the Spacebar is pressed
+      if (document.activeElement && document.activeElement.click) {
+        document.activeElement.click();
+      }
     }
+  };  
+
+  // Add event listeners for keyboard navigation
+  document.addEventListener('keydown', handleKeyDown);
+
+  // Clean up the event listener when the component unmounts
+  return () => {
+    document.removeEventListener('keydown', handleKeyDown);
   };
-  
-  useEffect(() => {
-    const fetchUserIdAsync = async () => {
-      const fetchedId = await fetchUserId();
-      setUserId(fetchedId);
-    };
-  
-    fetchUserIdAsync();
-  }, [isLoggedIn]);  
+}, []);
   
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -110,7 +112,6 @@ const App = () => {
   };
 
   const handleLogoClick = () => {
-    // Reset relevant state when clicking the logo
     setIsProfileVisible(false);
     setSelectedPost(null);
     setIsLoginVisible(false);
@@ -136,7 +137,7 @@ const App = () => {
     );
   };
 
-  const fetchPosts = () => {
+  const fetchPosts = () =>  {
     const searchParams = new URLSearchParams();
   
     // Add search term
@@ -293,7 +294,7 @@ const App = () => {
       )}
   
       {isProfileVisible && isLoggedIn && (
-        <Profile authToken={token} userId={userId} />
+        <Profile authToken={token}/>
       )}
   
       {isLoggedIn && !isProfileVisible && (
@@ -308,6 +309,7 @@ const App = () => {
       {(!isLoginVisible || isLoggedIn) && !selectedPost && !isSignupVisible && !isProfileVisible && (
         <>
           <PostList
+            id="postList"
             posts={posts}
             onPostSelect={handlePostSelect}
             onCommentSubmit={handleCommentSubmit}

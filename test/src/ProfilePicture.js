@@ -62,10 +62,9 @@ const ProfilePicture = ({ authToken }) => {
         },
         body: JSON.stringify({ profilePictureUrl: 'DEFAULT_IMAGE_URL' }),
       });
-
+  
       if (response.ok) {
-        window.alert('Profile picture created successfully');
-        fetchProfilePicture();
+        fetchProfilePicture(); 
       } else {
         console.error('Error creating profile picture:', response.status);
       }
@@ -73,7 +72,7 @@ const ProfilePicture = ({ authToken }) => {
       console.error('Error creating profile picture:', error);
     }
   };
-
+  
   return (
     <div>
       <h3>Profile Picture</h3>
@@ -83,6 +82,10 @@ const ProfilePicture = ({ authToken }) => {
             src={profilePictureUrl}
             alt="Profile"
             style={{ maxWidth: '200px', maxHeight: '200px', width: 'auto', height: 'auto' }}
+            onError={() => {
+              setProfilePictureUrl('');
+              window.alert('Failed to load profile picture');
+            }}
           />
           <div>
             <input
@@ -99,13 +102,35 @@ const ProfilePicture = ({ authToken }) => {
       ) : (
         <div>
           <p>No profile picture available</p>
-          <button className="buttons" onClick={handleCreateProfilePicture}>
-            Create Profile Picture
-          </button>
+          {newImageUrl && (
+            <>
+              <p>Preview:</p>
+              <img
+                src={newImageUrl}
+                alt="Profile Preview"
+                style={{ maxWidth: '200px', maxHeight: '200px', width: 'auto', height: 'auto' }}
+                onError={() => {
+                  setNewImageUrl('');
+                  window.alert('Invalid link');
+                }}
+              />
+            </>
+          )}
+          <div>
+            <input
+              type="text"
+              placeholder="URL"
+              value={newImageUrl}
+              onChange={(e) => setNewImageUrl(e.target.value)}
+            />
+            <button className="buttons" onClick={handleUpdateProfilePicture}>
+              Update Profile Picture
+            </button>
+          </div>
         </div>
       )}
     </div>
-  );
+  );  
 };
 
 export default ProfilePicture;
